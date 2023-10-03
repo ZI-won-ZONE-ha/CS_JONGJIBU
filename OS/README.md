@@ -6,7 +6,7 @@
 
 ### 1일차
 
-1일차 자료 저장소: [저장소]()
+1일차 자료 저장소: [DAY1](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/tree/main/OS/DAY1)
 
 - Chapter 1
     - 강의소개 - 28분
