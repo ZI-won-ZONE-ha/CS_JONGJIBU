@@ -165,9 +165,9 @@ fork를 하면 부모의 파일 디스크립터 파일을 카피한다. 반대�
 - 부모의 파일 디스크립터가 카피가 된다. fork 시스템 콜을 이용하여 자식 프로세스를 사용한다.
 - 단방향 통신 (↔ Named Pipe)
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/c98a7642-3643-4cbe-84dc-27f69a0559a8)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/9da8ecdf-3407-4f6c-8d22-44fca002c759)
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/92dbee2d-2a4b-4617-aa3a-e83e4f7db208)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/e62031c3-3d27-449c-85fa-d75de4e79625)
 
 ## Named Pipe
 
@@ -175,7 +175,7 @@ fork를 하면 부모의 파일 디스크립터 파일을 카피한다. 반대�
 - 두 개의 프로세스가 관련이 없어도 데이터를 주고 받을 수 있다.
 - 여러명의 writer 가 존재할 수 있다.
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/e2de7278-a10f-443b-b363-2da72eb8b9bb)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/01b7525f-a95e-469f-99f7-be4bdbcfe0a5)
 
 - 파일 생성 : mkfifo, mknod
 - 중오햔 이슈: 동기화, 즉 writer가 오픈할 때, 해당 named pipe를 읽는 process가 준비되어 있지 않으면 문제가 생긴다. 따라서 open할 때, 상대방이 준비될 때까지 기다리는 옵션을 이용한다. 이는 `NON_BLOCK` 옵션을 통해서 가능하다.
@@ -186,14 +186,14 @@ fork를 하면 부모의 파일 디스크립터 파일을 카피한다. 반대�
 - 공유할 수 있는 메모리가 존재한다. 공유할 수 없으면 `message passing`을 한다.
 - Signal, pipe, socket : 전통적인 IPC
     
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/c33a5529-479d-4eff-80a3-d58650bfeeca)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/79efd852-d79e-4bfa-afdb-1112edcc5f49)
     
 
 # CPU Control
 
 ## Interrupt Handling
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/80ae5ec8-f6c2-4d81-8505-500415e76230)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/93f06985-ad7a-4b0c-9948-0bb1b323de1c)
 
 interrupt는 interrupt Service Routine (interrupt handler)에게 권한을 넘겨준다. Interrupt Handler 는 운영체제의 한 파트이다. 
 
@@ -232,9 +232,9 @@ interrupt는 interrupt Service Routine (interrupt handler)에게 권한을 넘�
 - 외부에서 packet이 걸려서 interrupt가 걸리면 유저모드와 상관없이 커널 모드로 가야 하므로, 기존의 유저 코드를 save하고 커널 모드로 간다.
 - ex) Open 함수를 동작 시켰을 때 interrupt → vector → handler -> 핸들러 종류마다 번호가 다르게 매겨지고, 번호에 따라서 기능 수행이 된다.
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/3b84d981-eb81-47d4-8932-32f14c1d1059)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/1d1eb2e6-50c3-453b-adee-94095a201f82)
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/2079b940-bb3b-47b6-b267-927a1664a5d7)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/ed4f2fba-468d-4e09-840c-2f757c68e40d)
 
 ## System Call
 
@@ -245,7 +245,7 @@ interrupt는 interrupt Service Routine (interrupt handler)에게 권한을 넘�
     
     → 이에 대한 방법은 운영체제 마다 다르다. 
     
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/c326a5a5-0c1c-48e9-bccf-58f2f583cf72)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/ca8adb89-5526-4b54-b125-fa7dddf86526)
 
 - stack에 size, buffer, fd, number 순으로 push 한다. 4개를 push 했으므로, 하나당 4바이트이고 +16 만큼 stack 의 point를 옮겨 주어 정상화한다.
 
@@ -277,11 +277,11 @@ interrupt는 interrupt Service Routine (interrupt handler)에게 권한을 넘�
 
 ### First Come First Served
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/ced47053-addc-4375-8f68-fcb483b8ff05)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/e951e44a-57ce-4c37-94ed-36575bb6c75a)
 
 - 단점 : **Convoy Effect**
     
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/580f7d62-8e2c-4a42-b8dd-eed1f119f44a)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/0aba14f2-9575-46f7-bb43-db5dda447ac3)
     
 
 누가 먼저 수행되느냐에 따라서 Performance 매트릭의 차이가 있다. 
@@ -304,9 +304,9 @@ CPU 프로세스가 끝나면, IO Queue로 보내지는데, CPU 타임이 짧기
 
 - Non-preemptive
     
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/fc6cac57-6299-4973-911c-0469f10a275e)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/3069a407-93f5-4343-81af-67dbd097f855)
     
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/790a977a-fdd5-4230-9257-07d3a6bb76ff)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/de6a36b2-3ecf-459e-acf6-d6f4d21291e3)
     
 
 → 다음과 같이 도중에 들어오게 되면 긴 job을 끝낸 후에야 수행이 가능하다.
@@ -324,7 +324,7 @@ CPU 프로세스가 끝나면, IO Queue로 보내지는데, CPU 타임이 짧기
 
 - preemption을 넣는다.
 
-![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/eea96d6f-1f9b-4f5b-875c-97f6019c6776)
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/46634e58-925c-4633-9da6-c844b4cd7fe5)
 
 - 새로운 잡이 들어올 때 기존의 잡과 새로운 잡을 비교하여 스케줄링한다.
 
