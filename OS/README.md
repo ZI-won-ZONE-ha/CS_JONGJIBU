@@ -29,6 +29,8 @@
 
 ### 2일차
 
+2일차 자료 저장소: [DAY2](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/tree/main/OS/DAY2)
+
 - Chapter 6
     - Process Synchronization 1 - 1시간 7분
     - 12 Process Synchronization 1 - 28분
