@@ -302,3 +302,306 @@ buffer slot을 넓혀 더 효율적이게 짤수 있다.
 
     
 최종 코드 이다.
+
+
+
+
+
+# Semaphore란?
+
+
+- 컨디션 , 뮤텍스 : thread 의 싱크로 나이즈 primitive
+- Semaphore : 프로세스에서의 싱크로 나이즈 → thread 에서도 사용이 가능.
+
+```c
+#include <semaphore.h>
+sem_t s;
+sem_init(&s, 0, 1)
+
+여기서 0은 thread에서 semaphore가 공유된다는 뜻이다. 
+만약 0이 아닌 다른 값이면, 프로세스에서 공유된다는 뜻임. 
+마지막 인자는 위에서 얘기한 세마포어의 상태값을 의미한다.
+```
+
+# Semaphore API
+
+```c
+int sem_wait(sem_t *s) {
+  decrement the value of semaphore s by one
+  wait if value of semaphore s is negative
+}
+
+int sem_post(sem_t *s) {
+  increment the value of semaphore s by one
+  if there are one or more threads waiting, wake one
+}
+```
+
+- `sem_wait`은 세마포어의 값을 1 내린 다음 그 값이 음수인 경우 wait 상태에 들어가며, `sem_post`는 세마포어의 값을 1 올려준 다음 대기중인 스레드가 있으면 그중 하나를 깨워주는 역할을 한다.
+- 1로 주면 락이 되고, 0으로 초기화 하면 order를 지켜주는 방식(condition variable), n이면 counting 할 때 쓰인다.
+- 음수 값의 의미 : - 뺀 나머지 → thread 웨이트 개수 (ex -2 => 2개의 thread가 기다리고 있다.)
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/0f4a742d-4727-46f5-9f3f-59b5e930b403)
+
+# Semaphore 용도
+
+## Lock으로 Semaphore 예시
+
+## Condition variable로써의 Semaphore 예시
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/7a67f568-9151-4218-9172-f23fd8826658)
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/d379c193-8f3b-4de1-9742-9a5fbde62c36)
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/af7c9099-8bb1-4d4a-b974-3b67aef034b0)
+
+다음과 같이 child가 먼저해도, parent가 먼저 실행되어도, Order를 보장한다. 
+
+## Producer / Consumer Problem (bounded-buffer)
+
+- 문제의 코드
+    
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/2e0fc4c6-73fd-4e68-ad1a-ca0863e8b4b2)
+    
+문제의 코드이다. producer에서 sem_wait → put 하는 과정에서 mutual exclusive가 보장되지 않는다. 따라서 wait, post하는 곳에 각각 lock을 걸어준다. 
+    
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/f6da2eec-e03e-4c8c-8791-ea6d1ee9e72b)
+    
+하지만 이또한 문제가 있다. 왜냐하면 `consumer`가 c0, c1을 거쳐서 기다리게 되고, `mutex`를 놓고 있지 않으므로 `producer`가 계속 대기 하고 있는 `deadlock`이 걸린다. 
+    
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/ca7446af-1a9e-4df2-8bac-6f686cbaf0fc)
+
+따라서 다음과 같이 순서를 바꾸면, deadlock을 면할 수 있다. 
+
+## Reader Writer Locks
+
+락에 의해 성능이 떨어지는 것을 최소화 시키는 것이 중요하다. 따라서 read할 때는 read를 가능하게 한다. 성능향상을 위해 reade와 writer를 분리한다. 
+
+두가지 방법이 있다. 
+
+- Reader 우선권 : read할 때, read Lock을 얻을 수 있다. writer가 starve
+- Writer 우선권 : write할 때, read를 하지 못한다. reader가 starve
+
+```c
+typedef struct _rwlock_t {
+  sem_t lock; // binary semaphore (basic lock)
+  sem_t writelock; // allow ONE writer/MANY readers
+  int readers; // #readers in critical section
+} rwlock_t;
+
+void rwlock_init(rwlock_t *rw) {
+  rw->readers = 0;
+  sem_init(&rw->lock, 0, 1);
+  sem_init(&rw->writelock, 0, 1);
+}
+
+void rwlock_acquire_readlock(rwlock_t *rw) {
+  sem_wait(&rw->lock);
+  rw->readers++;
+  if (rw->readers == 1) // first reader gets writelock
+  	sem_wait(&rw->writelock);
+  sem_post(&rw->lock);
+}
+
+void rwlock_release_readlock(rwlock_t *rw) {
+  sem_wait(&rw->lock);
+  rw->readers--;
+  if (rw->readers == 0) // last reader lets it go
+  	sem_post(&rw->writelock);
+  sem_post(&rw->lock);
+}
+
+void rwlock_acquire_writelock(rwlock_t *rw) {
+	sem_wait(&rw->writelock);
+}
+
+void rwlock_release_writelock(rwlock_t *rw) {
+ 	sem_post(&rw->writelock);
+}
+```
+
+예시) 
+
+- W1 R1 R2
+    - R1 → write lock 에서 기다린다.
+- R1 R2 R3 W1
+    - R1 R2 R3 W1으로 실행이 된다.
+- R1 R2 W1 R3 W2 W3 R4 W4
+    - R1, R2 같이 수행
+    - W1 기다림
+    - R3 같이 수행
+    - W2 , W3 기다림
+    - R4 같이 수행
+    - R1, R2, R3, R4, W1, W2, W3
+    
+
+## Dining PhiloSopher
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/fbd18769-da40-4860-9aca-dd552d9f0628)
+
+```c
+while (1) {
+  think();
+  get_forks(p);
+  eat();
+  put_forks(p);
+}
+```
+
+철학자들은 다음과 같은 과정을 거친다. 
+
+```c
+void get_forks(int p) {
+  sem_wait(&forks[left(p)]);
+  sem_wait(&forks[right(p)]);
+}
+
+void put_forks(int p) {
+  sem_post(&forks[left(p)]);
+  sem_post(&forks[right(p)]);
+}
+```
+
+포크를 쥔다는 것은 자기 말고 다른 누구도 그 포크를 사용할 수 없음을 의미하므로, 그 자체로 lock을 걸어 놓는 것과 같다고 생각할 수 있다. 
+
+### 문제점
+
+- DeadLock
+
+만약 철학자들이 모두 왼쪽의 포크를 집는다면, 오른쪽 포크를 못 얻으므로 Dead Lock에 걸린다. 이는 `Hold And Wait`
+
+### 해결법
+
+이는 **의존성 순환** 때문에 발생하는 문제이다. 따라서 의존성을 끊어준다. 
+
+```c
+void get_forks(int p) {
+  if (p == 4) {
+    sem_wait(&forks[right(p)]);
+    sem_wait(&forks[left(p)]);
+  } else {
+    sem_wait(&forks[left(p)]);
+    sem_wait(&forks[right(p)]);
+  }
+}
+```
+
+Dead loc k이 걸리진 않지만, 본인 왼쪽 오른쪽 사람이 계속 밥 먹으면 `starvation` 생겨서 죽을 수도 있다.
+
+---
+
+## Zemaphore (Semaphore using Condition variable)
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/e26ac00b-4b4d-49d5-9f1c-b21201a163f9)
+
+마이너스가 될 수 없는 세마포어라고 생각하면 된다. 
+
+<aside>
+💡 정리하자면! Condition variable은 semaphore를 구현할 수 있다. Semaphore 또한 Condition Variable을 구현할 수 있다.
+
+</aside>
+
+---
+
+# DeadLock
+
+cf ) 실무에서 Deadlock이 왜 일어날까? 
+
+- 컴포넌트 간의 복잡성 때문에 (vm은 file system을 접근하고 싶은데, 파일 시스템은 disk에서 메모리에 얹히기 위해 virtual memory에 접근해야 함)
+- encapsulation  때문에 (우리가 만들지 않은 collection, library를 통한 문제가 생길 수도 있다. )
+
+## Condition for DeadLock
+
+1. **Mutual exclusion :** 각 스레드는 스레드가 얻으려는 자원에 대한 제어권을 한 순간에 혼자만 사용하기를 요청한다.(lock을 얻는다던지,,)
+2. **Hold-and-wait:** 각 스레드는 자신에게 이미 할당된 자원(이미 acquire한 lock 등)을 가지고 있는 상태로 또다른 자원(이어서 얻기를 원하는 lock)을 얻기 위해 대기할 수 있다.
+3. **No preemption:** (lock 등의) 자원을 쥐고 있는 스레드로부터 해당 자원을 강제로 빼앗을 수 없다.
+4. **Circular wait :** 각 스레드는 체인에 소속된 다음 스레드가 요청한 하나 이상의 자원(lock 등)을 가지고 있는 circular chain에 소속되어 있다.
+
+4가지 조건을 하나라도 만족하지 않으면 DeadLock은 발생하지 않는다. 
+
+그렇다면 어떻게 `Prevent` Or `Avoid` Or `Detect/Recover` 할까 ? 
+
+## Prevention : Circular Wait
+
+`Parital Ordering`을 이용하여 끊는다. 
+
+L1을 L2보다 항상 먼저 얻게 함으로써 아까와 같이 lock을 얻는 순서가 꼬이는 일을 방지하는 것이라 할 수 있겠다.
+
+L1, l2, .. , L100까지 넘어가면 연상하기가 힘들어질 것 같다. 그럴 때에는 다시 Dining philosophers 문제를 떠올리면 좋을 것 같다. 포크를 쥐는 순서를 정해서 철학자들에게 강제한다면 당연히 해당 포크를 집을 철학자가 먼저 식사를 할 수 있겠지? 이렇게 모든 lock acquire order를 저장하는 방법을 **total ordering**이라 한다.
+
+예를 들어 여기서는 L1->L2, L2->L3, ... 와 같이 ordering의 일부만 저장해놓는 **partial ordering**을 사용할 수도 있다.
+
+## Prevention : Hold - And - Wait
+
+```c
+pthread_mutex_lock(prevention); // begin acquisition
+pthread_mutex_lock(L1);
+pthread_mutex_lock(L2);
+...
+pthread_mutex_unlock(prevention); // end
+```
+
+
+Lock 이 언제 사용될지 모를 때 미리 잡아 놓는다. 미리 어떤 락이 필요한지 다 알고 있어야 한다. 
+
+이는, dead lock 은 안걸리지만  Concurrency가 줄어들고 락 잡는 크기 최소한으로 줄여야 한다.
+
+## Prevention : No Preemption
+
+```c
+top:
+pthread_mutex_lock(L1);
+if (pthread_mutex_trylock(L2) != 0) {
+  pthread_mutex_unlock(L1);
+
+  goto top;
+}
+```
+
+위의 코드는 아래와 같이 작동한다.
+
+1. 일단 L1을 얻는다. 여기서 실패하면? 다른 스레드가 L1을 먼저 쥔 것이다.
+
+2. 다음으로 L2를 얻으려 시도하는데, 이때 성공하면 0이 아닌 값을 반환한다.
+
+3. L2를 얻는데 성공하면 L1과 L2를 온전히 얻은 것이므로 그냥 반환하면 된다.
+
+4. 만약 실패했다면, 쥐고 있던 L1을 다시 내려놓고 `top`으로 돌아가 단계 1부터 다시 실행한다.
+
+보면 알겠지만 위 코드의 각 명령어가 atomic하게 실행되는 것이 보장되지는 않기 때문에 두 스레드가 저 각각의 lock acquire 코드로 L1과 L2를 얻으려 하면 서로 각자 L1과 L2를 쥐었다가, 놓았다가만 영원히 반복하는 **livelock** 문제가 발생할 수도 있다.
+
+## Prevention : HardWare Exclusion
+
+Lock 을 잡지 않고, prevent 하는 것 찾아 보자.
+
+```c
+int CompareAndSwap(int *address, int expected, int new) {
+  if (*address == expected) {
+    *address = new;
+    return 1; // success
+  }
+  return 0; // failure
+}
+```
+
+```c
+void AtomicIncrement(int *value, int amount) {
+  do {
+  	int old = *value;
+  } while (CompareAndSwap(value, old, old + amount) == 0);
+}
+```
+
+---
+
+## **Deadlock Avoidance via Scheduling**
+
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/87687210/f97397aa-7156-4b9a-9c62-ddde2ba75461)
+
+다음과 같이 스케줄링 방식을 통해 피할 수 있다. 
+
+## Detect And Recover
+
+돌려보다가 deadlock 발생 할 때 detection 해서 방식을 취한다. 사이클 깨주는 액션(Leave, or 종료)
+
