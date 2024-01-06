@@ -72,7 +72,7 @@ Java에서는 ArchUnit을 통해 런타임 시점에 잘못된 의존성을 체�
 
 **결론: 분리된 별도 모듈을 활용하여 계층 간의 의존성을 강제한다!**
 
-![Uploading image.png…]()
+![image](https://github.com/ZI-won-ZONE-ha/CS_JONGJIBU/assets/88527476/4ab0fc0d-d7ea-4302-9210-3846fbb9a90a)
 
 책 127 - 128 다시 읽어보고 멀티 모듈 좀 찾아보고 정리하기
 
